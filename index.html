@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Human-Guided AI MARC Review</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">OpenAI Build Week</p>
+      <h1>Human-Guided “AI MARC” Review</h1>
+      <p class="tagline">AI creates. AI reviews. Humans decide.</p>
+    </div>
+    <div id="mode-badge" class="mode-badge" aria-label="Current mode">
+      <span aria-hidden="true">●</span><span id="mode-badge-text">Deterministic Demo mode</span>
+    </div>
+  </header>
+
+  <nav class="workflow-steps" aria-label="Workflow progress">
+    <ol>
+      <li data-stage="source"><span>1</span> Source</li>
+      <li data-stage="draft"><span>2</span> AI Creator</li>
+      <li data-stage="review"><span>3</span> AI Reviewer</li>
+      <li data-stage="decision"><span>4</span> Human Decision</li>
+      <li data-stage="final"><span>5</span> Final Record</li>
+    </ol>
+  </nav>
+
+  <aside class="policy-panel" aria-labelledby="policy-heading">
+    <div>
+      <p class="step-label">Human–AI agreement</p>
+      <h2 id="policy-heading">Cataloging framework active</h2>
+      <p id="policy-identity" class="policy-identity"></p>
+    </div>
+    <ul id="policy-summary"></ul>
+    <details>
+      <summary>View evidence and assumption rules</summary>
+      <ul id="policy-details"></ul>
+    </details>
+  </aside>
+
+  <div id="fallback-notice" class="fallback-notice" role="status" hidden></div>
+
+  <main>
+    <section class="panel" aria-labelledby="source-heading">
+      <div class="panel-heading">
+        <div>
+          <p class="step-label">Step 1 · Human-provided evidence</p>
+          <h2 id="source-heading">Start with a source</h2>
+        </div>
+        <button id="reset-demo" class="button button-secondary" type="button">Reset run</button>
+      </div>
+      <fieldset class="mode-picker">
+        <legend>Run mode</legend>
+        <label><input type="radio" name="run-mode" value="demo" checked> Demo <small>curated and repeatable</small></label>
+        <label><input type="radio" name="run-mode" value="live"> Live <small>OpenAI Creator and Reviewer</small></label>
+      </fieldset>
+      <div class="unified-source-input">
+        <label for="source-intake">Paste source text or enter an ISBN-10 / ISBN-13</label>
+        <textarea id="source-intake" rows="3" placeholder="Paste a description, or enter an ISBN such as 9780141439518"></textarea>
+        <button id="prepare-source" class="button button-secondary" type="button">Prepare source package</button>
+        <button id="load-demo-fixture" class="button button-secondary" type="button">Load fictional demo fixture</button>
+        <div class="source-divider"><span>or upload primary evidence</span></div>
+        <div class="pdf-upload-row">
+          <label for="pdf-upload" class="pdf-upload-label">PDF source evidence</label>
+          <input id="pdf-upload" type="file" accept="application/pdf,.pdf">
+          <button id="extract-pdf" class="button button-secondary" type="button">Extract PDF evidence</button>
+        </div>
+        <p class="input-help">One PDF, up to 25 MB. Either preparation button will process the selected PDF. Extracted values remain candidates until you verify and confirm them.</p>
+        <p id="source-error" class="error-message" role="alert"></p>
+      </div>
+      <section id="pdf-evidence-panel" class="pdf-evidence-panel" aria-labelledby="pdf-evidence-heading" hidden>
+        <div>
+          <p class="step-label">AI-extracted candidates · human verification required</p>
+          <h3 id="pdf-evidence-heading">Source evidence found</h3>
+          <p id="pdf-evidence-summary"></p>
+        </div>
+        <details>
+          <summary>View extracted evidence and page references</summary>
+          <div id="pdf-evidence-list" class="pdf-evidence-list"></div>
+        </details>
+      </section>
+      <div class="source-package-heading">
+        <h3>Resource Source Package</h3>
+        <p>Everything shown here—and only what is shown here—is sent to both AI roles.</p>
+      </div>
+      <div class="source-package-grid">
+        <label>Title <span id="provenance-title" class="provenance-badge"></span><input id="source-title" type="text"></label>
+        <label>Author/Creator <span id="provenance-author" class="provenance-badge"></span><input id="source-author" type="text"></label>
+        <label>Format <span id="provenance-format" class="provenance-badge"></span><input id="source-format" type="text"></label>
+        <label>Language <span id="provenance-language" class="provenance-badge"></span><input id="source-language" type="text"></label>
+        <label>Publication information <span id="provenance-publicationInformation" class="provenance-badge"></span><input id="source-publication" type="text"></label>
+        <label>ISBN <span id="provenance-isbn" class="provenance-badge"></span><input id="source-isbn" type="text"></label>
+      </div>
+      <label for="source-text">Resource description / summary <span id="provenance-description" class="provenance-badge"></span></label>
+      <textarea id="source-text" rows="5"></textarea>
+      <label for="source-notes">Additional source notes <span id="provenance-additionalNotes" class="provenance-badge"></span></label>
+      <textarea id="source-notes" rows="3"></textarea>
+      <label for="source-contents">Contents <span id="provenance-contents" class="provenance-badge"></span></label>
+      <textarea id="source-contents" rows="5" placeholder="Transcribed contents, when visibly supplied"></textarea>
+      <p class="retrieved-metadata-note">Open Library information is retrieved metadata for human verification—not authoritative cataloging data.</p>
+      <div id="source-warnings" class="source-warnings" role="status"></div>
+      <div class="source-confirmation">
+        <button id="confirm-source" class="button button-secondary" type="button">Verify and confirm source package</button>
+        <span id="confirmation-status">Not yet confirmed</span>
+      </div>
+      <button id="create-draft" class="button button-primary" type="button" disabled>Create AI draft</button>
+      <p id="creator-error" class="error-message" role="alert"></p>
+    </section>
+
+    <section id="creator-panel" class="panel" aria-labelledby="creator-heading" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="step-label">Step 2 · AI Creator</p>
+          <h2 id="creator-heading">Creator draft</h2>
+        </div>
+        <span class="role-badge creator">AI-created draft</span>
+      </div>
+      <p class="plain-language">The Creator turns the source evidence into a structured bibliographic draft. This is not yet the final record.</p>
+      <dl id="creator-fields" class="record-fields"></dl>
+      <button id="run-review" class="button button-primary" type="button">Ask independent AI Reviewer</button>
+      <p id="reviewer-error" class="error-message" role="alert"></p>
+    </section>
+
+    <section id="review-panel" class="panel" aria-labelledby="review-heading" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="step-label">Steps 3–4 · AI Reviewer and human decision</p>
+          <h2 id="review-heading">Review three recommendations</h2>
+        </div>
+        <span class="role-badge reviewer">AI recommendations only</span>
+      </div>
+      <p class="plain-language">The Reviewer cannot modify the draft. Accept, edit, or reject every recommendation.</p>
+      <div class="review-coverage">
+        <h3>Reviewer coverage</h3>
+        <p>Every listed MARC area was reviewed. Recommendations appear below; the remaining fields were reviewed with no change recommended.</p>
+        <ul id="review-coverage-list"></ul>
+      </div>
+      <div id="deterministic-findings" class="deterministic-findings" hidden>
+        <h3>Deterministic checks</h3>
+        <ul id="deterministic-findings-list"></ul>
+      </div>
+      <section id="authority-checks" class="authority-checks" hidden>
+        <h3>LC vocabulary checks</h3>
+        <p>Authority form and application are separate. An authorized term must still fit the visible evidence and cataloging policy.</p>
+        <div id="authority-checks-list"></div>
+      </section>
+      <div id="decision-summary" class="decision-summary" aria-live="polite"></div>
+      <p id="no-recommendations" class="no-recommendations" hidden>Reviewer completed all field checks; no actionable changes were recommended.</p>
+      <div id="recommendations" class="recommendations"></div>
+    </section>
+
+    <section id="final-panel" class="panel final-panel" aria-labelledby="final-heading" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="step-label">Step 5 · Human-supervised output</p>
+          <h2 id="final-heading">Creator MARC draft</h2>
+        </div>
+        <span id="final-status" class="role-badge final">Awaiting decisions</span>
+      </div>
+      <p id="final-explanation" class="plain-language"></p>
+      <pre id="marc-preview" tabindex="0"></pre>
+    </section>
+
+    <section id="audit-panel" class="panel audit-panel" aria-labelledby="audit-heading" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="step-label">Run provenance</p>
+          <h2 id="audit-heading">Audit trail</h2>
+        </div>
+        <button id="download-audit" class="button button-secondary" type="button">Download audit JSON</button>
+      </div>
+      <p id="audit-summary" class="plain-language"></p>
+      <details>
+        <summary>Inspect complete run record</summary>
+        <pre id="audit-preview" tabindex="0"></pre>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <p>Cataloging expertise remains authoritative. Fictional demo data is loaded only when explicitly selected.</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "profileId": "build-week-conservative-rda",
+  "profileVersion": "1.2",
+  "profileLabel": "Build Week conservative cataloging",
+  "descriptionStandard": "RDA",
+  "encodingStandard": "MARC 21",
+  "targetVocabularies": [
+    { "name": "LCSH", "verificationRequired": true },
+    { "name": "LCGFT", "verificationRequired": true }
+  ],
+  "evidenceRule": "Do not supply unsupported bibliographic or content facts.",
+  "missingEvidenceBehavior": "Leave unsupported values blank, not assessable, or needing verification.",
+  "authorityRule": "Do not label a heading verified without an actual authority result.",
+  "authorityVerification": {
+    "service": "Library of Congress Linked Data Service",
+    "lcshEndpoint": "https://id.loc.gov/authorities/subjects/",
+    "lcgftEndpoint": "https://id.loc.gov/authorities/genreForms/",
+    "lcnafEndpoint": "https://id.loc.gov/authorities/names/",
+    "subjectApplicationManual": "https://www.loc.gov/aba/publications/FreeSHM/freeshm.html",
+    "genreFormApplicationManual": "https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html",
+    "rule": "Verify authorized form, subdivision type, construction, and appropriate application separately. Map authority 180/181/182/185 to MARC $x/$z/$y/$v; inspect main-heading 008/06 only for $z and 008/15 for subject use."
+  },
+  "prohibitedAssumptions": [
+    "Do not infer content from title alone.",
+    "Do not invent authority forms, dates, identifiers, publication facts, or quotations.",
+    "Do not treat model confidence as authority verification."
+  ],
+  "humanApprovalRequired": true
+}

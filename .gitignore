@@ -1,0 +1,15 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+node_modules/
+coverage/
+tmp/
+
+# Human-supplied evidence is excluded by default. The original fictional Build
+# Week source is generated and tracked under output/pdf/ instead.
+SourceEvidence/*.pdf
