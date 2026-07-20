@@ -1,4 +1,4 @@
-# CatalogingUI Build Week
+# Human-Guided AI MARC Review
 
 A focused demonstration of an explainable expert-review workflow:
 
@@ -17,7 +17,7 @@ Build Week submission materials:
 
 ## Current milestone
 
-The application supports deterministic Demo mode and an optional Live mode. It supports:
+The application supports a deterministic Demo mode and a Live mode for real source packages. It supports:
 
 1. Unified pasted-text / ISBN intake plus one-PDF upload
 2. Deterministic ISBN-10 and ISBN-13 validation
@@ -46,7 +46,20 @@ git clone https://github.com/PingGF2025/human-guided-ai-marc-review.git
 cd human-guided-ai-marc-review
 ```
 
-### Demo mode only
+### Choose the correct run path
+
+The application opens in **Demo** mode. Select **Live** before using pasted text, ISBN data, or a PDF for the complete Creator → Reviewer workflow.
+
+| Source path | UI mode | Server and network requirements | Implemented behavior |
+| --- | --- | --- | --- |
+| **Load fictional demo fixture** (*Memory Palace*) | Demo (default) | Static server only; no API key | Complete deterministic Creator, three recommendations, Accept/Edit/Reject, final record, audit, and reset |
+| Original fictional PDF in `output/pdf/` | Live | `api_server.py` and an API key for Creator/Reviewer; its checksum-matched evidence extraction itself makes no OpenAI call | Complete live workflow using deterministic, page-cited extraction from the supplied fictional PDF |
+| Other PDF, one file up to 25 MB | Live | `api_server.py`, API key, and network access | Live OpenAI evidence extraction followed by the live Creator/Reviewer workflow |
+| Bundled ISBN `9780141439518` | Live | Metadata preparation is bundled and needs no Open Library call; `api_server.py` and an API key are required for Creator/Reviewer | Deterministic retrieved-metadata snapshot, human confirmation, then live Creator/Reviewer |
+| Other valid ISBN-10 or ISBN-13 | Live | Open Library access plus `api_server.py` and an API key for Creator/Reviewer | Populates the Source Package only when Open Library returns a match; otherwise the UI reports that no match was found |
+| Pasted source text | Live | `api_server.py` and an API key | Places the text in the visible description field for human completion and confirmation before Creator runs |
+
+### Deterministic Demo mode
 
 From this repository root—the directory containing `index.html`—start a local static server:
 
@@ -60,15 +73,9 @@ The app uses browser-native ES modules and has no runtime dependencies.
 
 The application opens with an empty intake and empty Resource Source Package. **Load fictional demo fixture** explicitly loads *Memory Palace*; it has no ISBN and is visibly identified as fictional demonstration data.
 
-An ISBN may be entered in the unified intake or directly in the visible Source Package ISBN field; **Prepare source package** recognizes either location.
+Demo mode accepts only the explicitly loaded fictional fixture. The static server cannot process PDF uploads or run the live Creator and Reviewer. If a Live call fails for the fictional fixture, the UI may visibly switch to its corresponding deterministic fallback. If a Live call fails for a real source, the failure is recorded and the workflow stops; unrelated fictional output is never substituted.
 
-Demo mode accepts only the explicitly loaded fictional fixture. Pasted text and ISBN-derived packages require Live mode. If a Live call fails for a real source, the failure is visibly recorded and the workflow stops; unrelated fictional output is never substituted. Deterministic fallback remains available for the fictional fixture.
-
-The PDF upload accepts one file up to 25 MB. The original fictional `output/pdf/build-week-demo-source.pdf` has deterministic, explicitly labeled extraction so the evidence demonstration works offline. Other PDFs use live OpenAI document extraction and therefore require the local API server and API key. Every extracted value remains an editable candidate until the human confirms the visible Source Package. The audit records filename, size, checksum, extraction method, page citations, warnings, and human-confirmed values; raw PDF bytes are not stored in the audit.
-
-For the deterministic offline ISBN demonstration, enter `9780141439518`. That ISBN selects a visibly labeled bundled metadata snapshot, so the offline demonstration does not depend on network availability or changing third-party data. Other valid ISBNs use Open Library retrieval. Review or edit the populated Resource Source Package, then select **Verify and confirm source package** before running the Creator.
-
-### Live and Demo modes
+### Live mode
 
 Create a virtual environment, install the server dependencies, and configure the API key:
 
@@ -85,7 +92,13 @@ Edit `.env`, then launch:
 python3 api_server.py
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000). API keys remain on the local server and are never sent to the browser.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000), then select **Live** in the Run mode control before beginning a PDF, ISBN, or pasted-text workflow. API keys remain on the local server and are never sent to the browser.
+
+An ISBN may be entered in the unified intake or directly in the visible Source Package ISBN field; **Prepare source package** recognizes either location. ISBN checksum validation is deterministic. The bundled ISBN uses a visibly labeled metadata snapshot; other valid ISBNs query Open Library and succeed only when Open Library returns a match. Open Library values are candidates for human verification, not authoritative cataloging data.
+
+The PDF upload accepts one file up to 25 MB. The original fictional PDF uses deterministic, explicitly labeled evidence extraction when its checksum matches, but the subsequent Creator and Reviewer are still Live calls. Other PDFs use live OpenAI document extraction. Every extracted value remains an editable candidate until the human confirms the visible Source Package. The audit records filename, size, checksum, extraction method, page citations, warnings, and human-confirmed values; raw PDF bytes are not stored in the audit.
+
+For every Live source path, review or edit the populated Resource Source Package and select **Verify and confirm source package** before running the Creator. A title or resource description is required for confirmation.
 
 ## Verify
 
@@ -153,7 +166,7 @@ Live PDF extraction uses an extended request timeout and limited transport retri
 
 ## Build Week extension and Codex collaboration
 
-The pre-existing `CatalogingUI ESM` sibling is preserved unchanged. This Build Week workspace was scaffolded separately on July 18, 2026. Its human-confirmed Source Package, separate live GPT-5.6 Creator and Reviewer services, strict schemas, adaptive field coverage, Accept/Edit/Reject workflow, final-record derivation, complete audit, explicit fallback behavior, PDF and ISBN intake, cataloging-policy contract, LC authority reconciliation, original demo materials, and regression tests were developed during the submission period. The dated Git history provides file-level evidence of that work.
+This focused Build Week prototype was developed during the submission period by adapting ideas from an existing cataloging interface. Its human-confirmed Source Package, separate live GPT-5.6 Creator and Reviewer services, strict schemas, adaptive field coverage, Accept/Edit/Reject workflow, final-record derivation, complete audit, explicit fallback behavior, PDF and ISBN intake, cataloging-policy contract, LC authority reconciliation, original demo materials, and regression tests are included in this repository. The public repository begins with a privacy-reviewed submission snapshot rather than the earlier local development history.
 
 Codex was the principal engineering collaborator. It translated the human expert's product vision into the vertical-slice architecture, implemented and tested the browser and server layers, diagnosed live API and PDF issues, researched official MARC and LC vocabulary behavior, and iteratively corrected the system in response to expert review. The human cataloger retained authority over scope, cataloging policy, MARC correctness, authority interpretation, and final product decisions. Examples include requiring one person in field 100, separating 245 responsibility and 700/710 access points, adding RDA 336/337/338, distinguishing LCSH `$x/$z/$y/$v`, and requiring 4XX-to-1XX authority evidence.
 
