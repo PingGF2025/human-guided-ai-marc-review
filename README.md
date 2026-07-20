@@ -39,9 +39,16 @@ URL and spreadsheet ingestion remain deliberately deferred. General-purpose mult
 
 ## Launch
 
+Clone the repository and enter its root directory:
+
+```bash
+git clone https://github.com/PingGF2025/human-guided-ai-marc-review.git
+cd human-guided-ai-marc-review
+```
+
 ### Demo mode only
 
-From this directory, start a local static server:
+From this repository root—the directory containing `index.html`—start a local static server:
 
 ```bash
 python3 -m http.server 8000
