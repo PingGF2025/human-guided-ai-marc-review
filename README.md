@@ -8,10 +8,8 @@ Licensed under the [MIT License](LICENSE).
 
 This Build Week prototype adapts ideas from an existing cataloging interface into a focused demonstration of transparent, human-guided AI review.
 
-Build Week submission materials:
+Included demonstration evidence:
 
-- [`DEMO.md`](DEMO.md) - timed three-minute narration and click path
-- [`DEVPOST_DESCRIPTION.md`](DEVPOST_DESCRIPTION.md) - submission-text draft
 - [`output/pdf/build-week-demo-source.pdf`](output/pdf/build-week-demo-source.pdf) - original fictional evidence packet for recording
 
 ## Current milestone
@@ -35,6 +33,12 @@ The application supports a deterministic Demo mode and a Live mode for real sour
 Open Library values are explicitly labeled **retrieved metadata**, not authoritative cataloging data. Missing values, retrieval failures, and use of the offline fixture remain visible to the human and in the audit.
 
 URL and spreadsheet ingestion remain deliberately deferred. General-purpose multi-file PDF processing is also outside the Build Week slice.
+
+## Prerequisites
+
+- **Deterministic Demo:** Python 3 to start the local static server
+- **Live mode:** Python 3.10 or newer, `pip`, network access, and an OpenAI project API key
+- **Tests:** Node.js 18 or newer for the browser workflow tests; Python 3.10 or newer for backend tests
 
 ## Launch
 
