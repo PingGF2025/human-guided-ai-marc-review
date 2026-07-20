@@ -12,7 +12,6 @@ Build Week submission materials:
 
 - [`DEMO.md`](DEMO.md) - timed three-minute narration and click path
 - [`DEVPOST_DESCRIPTION.md`](DEVPOST_DESCRIPTION.md) - submission-text draft
-- [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md) - rules-based readiness checklist
 - [`output/pdf/build-week-demo-source.pdf`](output/pdf/build-week-demo-source.pdf) - original fictional evidence packet for recording
 
 ## Current milestone
