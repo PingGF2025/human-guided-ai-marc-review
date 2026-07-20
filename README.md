@@ -6,7 +6,7 @@ A focused demonstration of an explainable expert-review workflow:
 
 Licensed under the [MIT License](LICENSE).
 
-This workspace is intentionally separate from `../CatalogingUI ESM`, which remains unchanged.
+This Build Week prototype adapts ideas from an existing cataloging interface into a focused demonstration of transparent, human-guided AI review.
 
 Build Week submission materials:
 
