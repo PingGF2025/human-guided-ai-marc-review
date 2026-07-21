@@ -8,6 +8,10 @@ Licensed under the [MIT License](LICENSE).
 
 This Build Week prototype adapts ideas from an existing cataloging interface into a focused demonstration of transparent, human-guided AI review.
 
+## Three-minute demo
+
+[Watch the Human-Guided AI MARC Review Build Week demo on YouTube](https://youtu.be/3wkxP2i9WaU).
+
 Included demonstration evidence:
 
 - [`output/pdf/build-week-demo-source.pdf`](output/pdf/build-week-demo-source.pdf) - original fictional evidence packet for recording
