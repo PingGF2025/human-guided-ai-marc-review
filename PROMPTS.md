@@ -14,7 +14,7 @@ PDF ingestion is a separate pre-Creator role defined in `server/pdf_evidence.py`
 
 ## AI Creator
 
-The Creator receives the active Cataloging Policy Profile plus only the visible Resource Source Package and produces a conservative structured bibliographic draft. It is told that its output is provisional and that missing facts must remain empty rather than be invented.
+The Creator receives the active Cataloging Policy Profile plus only the visible Resource Source Package and produces a conservative structured bibliographic draft. It is told that its output is provisional and that missing facts must remain empty rather than be invented. For subject analysis it must examine the title, description, additional notes, and especially contents together; identify principal rather than incidental concepts; and propose a small set of evidence-supported headings that collectively cover the work. Those values remain candidates until the separate LC authority layer and Reviewer evaluate them.
 
 Personal names and relationships remain separate structured values. A 100 access point receives the applicable RDA relationship designator rather than a hard-coded author role. Resource-specific practice remains important: a composer may appropriately be the 100 creator for a musical work, while a film director is normally represented as a 700 contributor under title main entry.
 
@@ -34,7 +34,7 @@ Creator draft matching CREATOR_SCHEMA
 
 ## AI Reviewer
 
-The Reviewer receives the exact same Cataloging Policy Profile, visible Resource Source Package, completed Creator draft, and separately generated deterministic validation findings. It reviews twelve MARC areas exactly once—including proposed classification, geographic coding, bibliography, and contents—and may produce zero or more recommendations. It cannot modify the draft.
+The Reviewer receives the exact same Cataloging Policy Profile, visible Resource Source Package, completed Creator draft, and separately generated deterministic validation findings. It reviews twelve MARC areas exactly once—including proposed classification, geographic coding, bibliography, and contents—and may produce zero or more recommendations. It cannot modify the draft. For subjects it first performs an independent completeness check against the visible evidence, then separates concept support, authority form, construction, and application. Lookup failure alone is not a reason to remove a source-supported heading; missing major concepts and verified replacements remain actionable recommendations for the human.
 
 Each coverage result distinguishes `no_change`, `change_recommended`, `missing_field`, `needs_verification`, and `not_assessable`. Confidence and verification are separate: a heading remains `not_verified` unless an actual authority result was supplied as evidence.
 

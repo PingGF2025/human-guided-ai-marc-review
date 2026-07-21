@@ -63,8 +63,10 @@ def parse_authority_marcxml(xml_text: str) -> dict[str, str]:
     root = ElementTree.fromstring(xml_text)
     control_008 = next((node.text or "" for node in root.iter() if node.tag.endswith("controlfield") and node.attrib.get("tag") == "008"), "")
     heading_field = next((node for node in root.iter() if node.tag.endswith("datafield") and node.attrib.get("tag") in {"100", "110", "111", "130", "150", "151", "155", "180", "181", "182", "185"}), None)
+    subdivision_reference = next((node for node in root.iter() if node.tag.endswith("datafield") and node.attrib.get("tag") == "260"), None)
     heading_tag = heading_field.attrib.get("tag", "") if heading_field is not None else ""
     heading_parts = [] if heading_field is None else [node.text or "" for node in heading_field if node.tag.endswith("subfield") and node.attrib.get("code") in {"a", "x", "y", "z", "v"}]
+    subdivision_instruction = [] if subdivision_reference is None else [node.text or "" for node in subdivision_reference if node.tag.endswith("subfield") and node.attrib.get("code") in {"a", "i"}]
     return {
         "headingTag": heading_tag,
         "heading": "--".join(part.strip() for part in heading_parts if part.strip()),
@@ -72,6 +74,8 @@ def parse_authority_marcxml(xml_text: str) -> dict[str, str]:
         "subjectUseCode": control_008[15] if len(control_008) > 15 else "",
         "kindOfRecordCode": control_008[9] if len(control_008) > 9 else "",
         "subdivisionTypeCode": control_008[17] if len(control_008) > 17 else "",
+        "subdivisionReference": "yes" if subdivision_reference is not None else "",
+        "subdivisionInstruction": " ".join(part.strip() for part in subdivision_instruction if part.strip()),
         "control008": control_008,
     }
 
@@ -164,6 +168,115 @@ def verify_term(term: str, vocabulary: str, fetch_json: Callable[[str], Any] = _
         }
 
 
+def _verify_multi_component_heading(
+    complete: dict[str, Any],
+    parts: list[str],
+    fetch_json: Callable[[str], Any],
+    fetch_text: Callable[[str], str],
+) -> dict[str, Any]:
+    """Verify a main heading followed by two or more authorized components."""
+    def inspect(candidates):
+        records = []
+        for candidate_item in candidates:
+            if not candidate_item["uri"]:
+                continue
+            record_url = _marcxml_url(candidate_item["uri"])
+            records.append((candidate_item, record_url, parse_authority_marcxml(fetch_text(record_url))))
+        return records
+
+    main_label = parts[0]
+    main_records = inspect(_exact_matches(main_label, "LCSH", fetch_json))
+    main_match = next((item for item in main_records if item[2]["headingTag"] in {"100", "110", "111", "130", "150", "151"} and item[2]["subjectUseCode"] == "a"), None)
+    main_variant = None
+    if not main_match:
+        main_variant = _variant_resolution(main_label, fetch_json)
+        if main_variant:
+            record_url = _marcxml_url(main_variant["authorityUri"])
+            record = parse_authority_marcxml(fetch_text(record_url))
+            if record["headingTag"] in {"100", "110", "111", "130", "150", "151"} and record["subjectUseCode"] == "a":
+                main_match = ({"label": main_variant["authorizedLabel"], "uri": main_variant["authorityUri"]}, record_url, record)
+    if not main_match:
+        raise ValueError("No subject-appropriate main-heading authority was returned")
+
+    main_choice, main_record_url, main_record = main_match
+    components = [{
+        "role": "main_heading", "label": main_choice["label"], "status": "verified_form",
+        "authorityUri": main_choice["uri"], "recordUrl": main_record_url,
+        "headingTag": main_record["headingTag"],
+    }]
+    canonical_parts = [main_choice["label"]]
+    subdivision_codes = []
+    subdivision_types = []
+    geographic_permitted = True
+
+    for label in parts[1:]:
+        subject_records = inspect(_exact_matches(label, "LCSH", fetch_json))
+        subdivision_match = next((item for item in subject_records if item[2]["headingTag"] in {"180", "181", "182", "185"}), None)
+        # Some free-floating subdivisions are represented by an authorized 150
+        # plus a 260 complex see reference describing where subdivision use is
+        # permitted (for example, Government policy).
+        if not subdivision_match:
+            subdivision_match = next((item for item in subject_records if item[2]["headingTag"] == "150" and item[2]["subdivisionReference"] == "yes"), None)
+
+        if subdivision_match:
+            choice, record_url, record = subdivision_match
+            code = {"180": "x", "181": "z", "182": "y", "185": "v", "150": "x"}[record["headingTag"]]
+            subdivision_type = {"x": "topical", "z": "geographic", "y": "chronological", "v": "form"}[code]
+            component = {
+                "role": f"{subdivision_type}_subdivision", "label": choice["label"], "status": "verified_form",
+                "authorityUri": choice["uri"], "recordUrl": record_url,
+                "headingTag": record["headingTag"], "marcCode": code,
+            }
+            if record["subdivisionInstruction"]:
+                component["subdivisionInstruction"] = record["subdivisionInstruction"]
+        else:
+            place_records = inspect(_exact_matches(label, "LCNAF", fetch_json))
+            place_match = next((item for item in place_records if item[2]["headingTag"] == "151"), None)
+            if not place_match:
+                complete.update({
+                    "status": "not_verified", "constructionStatus": "component_not_verified",
+                    "components": components + [{"role": "unresolved_subdivision", "label": label, "status": "not_verified", "authorityUri": ""}],
+                    "note": f"The component {label} was not verified; preserve the supported concept for human review rather than treating lookup failure as evidence for removal.",
+                })
+                return complete
+            choice, record_url, record = place_match
+            code, subdivision_type = "z", "geographic"
+            component = {
+                "role": "geographic_subdivision", "label": choice["label"], "status": "verified_form",
+                "authorityUri": choice["uri"], "recordUrl": record_url,
+                "headingTag": record["headingTag"], "marcCode": code,
+            }
+
+        if code == "z" and main_record["geographicSubdivisionCode"] not in {"d", "i"}:
+            geographic_permitted = False
+        components.append(component)
+        canonical_parts.append(choice["label"])
+        subdivision_codes.append(code)
+        subdivision_types.append(subdivision_type)
+
+    verified = main_record["subjectUseCode"] == "a" and geographic_permitted
+    canonical = "--".join(canonical_parts)
+    complete.update({
+        "status": "variant_resolved" if main_variant and verified else "verified_construction" if verified else "not_verified",
+        "authorizedLabel": canonical if verified else complete.get("authorizedLabel", ""),
+        "suggestedAuthorizedReplacement": canonical if main_variant and verified else "",
+        "variantEvidence": main_variant,
+        "authorityUri": main_choice["uri"],
+        "constructionStatus": "verified_multi_component_construction" if verified else "construction_not_permitted",
+        "subdivisionTypes": subdivision_types,
+        "subdivisionMarcCodes": subdivision_codes,
+        "subdivisionType": subdivision_types[-1] if subdivision_types else "",
+        "subdivisionMarcCode": subdivision_codes[-1] if subdivision_codes else "",
+        "geographicSubdivisionCode": main_record["geographicSubdivisionCode"] if "z" in subdivision_codes else "",
+        "geographicSubdivisionMethod": ({"d": "direct", "i": "indirect"}.get(main_record["geographicSubdivisionCode"], "not permitted") if "z" in subdivision_codes else "not applicable"),
+        "subjectUseCode": main_record["subjectUseCode"],
+        "components": components,
+        "note": ("All heading components are authorized and the multi-component construction is supported by the retrieved authority data. Application still requires Reviewer and human judgment."
+                 if verified else "The components were found, but the retrieved authority data does not permit the proposed construction."),
+    })
+    return complete
+
+
 def verify_lcsh_heading(
     heading: str,
     fetch_json: Callable[[str], Any] = _fetch_json,
@@ -175,6 +288,15 @@ def verify_lcsh_heading(
     complete["constructionStatus"] = "established_complete_heading" if complete["status"] == "verified_form" else "not_assessed"
     parts = [part.strip() for part in _search_term(heading).split("--") if part.strip()]
     complete_form_verified = complete["status"] == "verified_form"
+    if len(parts) > 2:
+        try:
+            return _verify_multi_component_heading(complete, parts, fetch_json, fetch_text)
+        except Exception as error:
+            complete["status"] = "verified_form" if complete_form_verified else "lookup_unavailable"
+            complete["constructionStatus"] = "established_complete_heading" if complete_form_verified else "authority_record_unavailable"
+            complete["note"] = (f"The complete heading is established, but component MARC authority records could not be retrieved ({type(error).__name__})."
+                                if complete_form_verified else f"Component authority records could not be retrieved ({type(error).__name__}); preserve source-supported concepts for human verification.")
+            return complete
     if len(parts) != 2:
         return complete
     if complete["status"] == "lookup_unavailable":

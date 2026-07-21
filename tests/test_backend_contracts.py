@@ -147,6 +147,35 @@ class BackendContractTests(unittest.TestCase):
         self.assertEqual(result["variantEvidence"]["matchedVariant"], "Cyber attacks")
         self.assertEqual(result["subdivisionMarcCode"], "z")
 
+    def test_multi_component_heading_verifies_260_subdivision_and_geographic_place(self):
+        def suggestions(url):
+            if "q=Internet%2D%2DGovernment+policy%2D%2DChina" in url:
+                return ["", [], [], []]
+            if "/names/" in url and "q=China" in url:
+                return ["", ["China"], [""], ["http://id.loc.gov/authorities/names/place"]]
+            if "q=Government+policy" in url:
+                return ["", ["Government policy"], [""], ["http://id.loc.gov/authorities/subjects/policy"]]
+            if "q=Internet" in url:
+                return ["", ["Internet"], [""], ["http://id.loc.gov/authorities/subjects/main"]]
+            return ["", [], [], []]
+
+        def record(url):
+            fixed = list("#" * 40)
+            fixed[15] = "a"
+            if "main.marcxml" in url:
+                fixed[6] = "i"
+                return f'<record><controlfield tag="008">{"".join(fixed)}</controlfield><datafield tag="150"><subfield code="a">Internet</subfield></datafield></record>'
+            if "policy.marcxml" in url:
+                return f'<record><controlfield tag="008">{"".join(fixed)}</controlfield><datafield tag="150"><subfield code="a">Government policy</subfield></datafield><datafield tag="260"><subfield code="i">subdivision</subfield><subfield code="a">Government policy</subfield><subfield code="i">under topical headings</subfield></datafield></record>'
+            return f'<record><controlfield tag="008">{"".join(fixed)}</controlfield><datafield tag="151"><subfield code="a">China</subfield></datafield></record>'
+
+        result = verify_lcsh_heading("Internet—Government policy—China", suggestions, record)
+        self.assertEqual(result["status"], "verified_construction")
+        self.assertEqual(result["constructionStatus"], "verified_multi_component_construction")
+        self.assertEqual(result["subdivisionMarcCodes"], ["x", "z"])
+        self.assertEqual([item["headingTag"] for item in result["components"]], ["150", "150", "151"])
+        self.assertIn("under topical headings", result["components"][1]["subdivisionInstruction"])
+
     def test_pdf_evidence_schema_is_strict_and_page_cited(self):
         self.assertFalse(PDF_EVIDENCE_SCHEMA["additionalProperties"])
         item = PDF_EVIDENCE_SCHEMA["properties"]["evidence"]["items"]
@@ -191,6 +220,9 @@ class BackendContractTests(unittest.TestCase):
         self.assertIn("Role: Independent AI Reviewer", REVIEWER_PROMPT)
         self.assertIn("Do not modify the draft", REVIEWER_PROMPT)
         self.assertIn("Never manufacture a change", REVIEWER_PROMPT)
+        self.assertIn("especially contents", CREATOR_PROMPT)
+        self.assertIn("Never recommend removal solely", REVIEWER_PROMPT)
+        self.assertIn("major concept missing", REVIEWER_PROMPT)
         self.assertNotEqual(CREATOR_PROMPT, REVIEWER_PROMPT)
 
     def test_creator_schema_is_strict_and_complete(self):
@@ -312,12 +344,11 @@ class BackendContractTests(unittest.TestCase):
         with self.assertRaises(LiveServiceError):
             _validate_review_contract({"reviewCoverage": coverage, "recommendations": []})
 
-    def test_review_contract_requires_human_action_for_unverified_heading(self):
+    def test_review_contract_allows_supported_unverified_heading_to_remain_needs_verification(self):
         fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]
         coverage = [{"field": field, "status": "needs_verification" if field == "650" else "no_change"} for field in fields]
         checks = [{"vocabulary": "LCSH", "status": "not_verified"}]
-        with self.assertRaisesRegex(LiveServiceError, "explicit human-review recommendation"):
-            _validate_review_contract({"reviewCoverage": coverage, "recommendations": []}, checks)
+        _validate_review_contract({"reviewCoverage": coverage, "recommendations": []}, checks)
 
 
 if __name__ == "__main__":

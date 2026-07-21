@@ -205,6 +205,20 @@ test("verified authority metadata drives geographic subdivision coding", () => {
   assert.doesNotMatch(buildMarcPreview(record), /\$xChina/);
 });
 
+test("multi-component authority metadata drives topical then geographic coding", () => {
+  const record = {
+    ...CURATED_CREATOR_DRAFT,
+    subjects: ["Internet—Government policy—China"],
+    subjectDetails: [{
+      value: "Internet—Government policy—China",
+      status: "verified_construction",
+      constructionStatus: "verified_multi_component_construction",
+      subdivisionMarcCodes: ["x", "z"]
+    }]
+  };
+  assert.match(buildMarcPreview(record), /=650  \\0\$aInternet\$xGovernment policy\$zChina\./);
+});
+
 test("unresolved constructed subject never defaults silently to topical x", () => {
   const record = {
     ...CURATED_CREATOR_DRAFT,

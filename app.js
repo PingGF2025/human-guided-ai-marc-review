@@ -432,6 +432,9 @@ function renderRecommendations() {
         componentRow.append(" · ", componentLink);
       }
       evidence.append(componentRow);
+      if (component.subdivisionInstruction) {
+        evidence.append(textElement("small", "authority-instruction", `Authority subdivision instruction: ${component.subdivisionInstruction}`));
+      }
     }
     evidence.append(textElement("p", "", `Application: ${check.applicationStatus.replaceAll("_", " ")}`));
     evidence.append(textElement("p", "", `Checked: ${check.checkedAt}`));

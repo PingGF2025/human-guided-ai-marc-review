@@ -136,12 +136,10 @@ def _validate_review_contract(result: dict[str, Any], authority_checks: list[dic
         area = FIELD_TO_AREA.get(recommendation.get("field"))
         if statuses.get(area) not in {"change_recommended", "missing_field"}:
             raise LiveServiceError("Live Reviewer returned a recommendation without a matching change status.")
-    checks = authority_checks or []
-    for vocabulary, area, prefix in (("LCSH", "650", "subjects."), ("LCGFT", "655", "genre")):
-        if any(check.get("vocabulary") == vocabulary and check.get("status") not in {"verified_form", "verified_construction"} for check in checks):
-            has_action = any(str(item.get("field", "")).startswith(prefix) for item in result.get("recommendations", []))
-            if statuses.get(area) != "change_recommended" or not has_action:
-                raise LiveServiceError(f"Live Reviewer left an unverified {vocabulary} candidate without an explicit human-review recommendation.")
+    # An unverified form is not itself evidence that a source-supported concept
+    # should be removed. Coverage may explicitly remain needs_verification when
+    # no verified replacement is available; actionable recommendations remain
+    # reserved for actual additions, corrections, and removals.
 
 
 def _client() -> OpenAI:
@@ -212,6 +210,7 @@ def create_draft(source_package: dict[str, Any], cataloging_profile: dict[str, A
             "status": check.get("status", "not_verified"),
             "subdivisionType": check.get("subdivisionType", ""),
             "subdivisionMarcCode": check.get("subdivisionMarcCode", ""),
+            "subdivisionMarcCodes": check.get("subdivisionMarcCodes", []),
             "constructionStatus": check.get("constructionStatus", ""),
         }
         for check in authority_checks if check.get("vocabulary") == "LCSH"

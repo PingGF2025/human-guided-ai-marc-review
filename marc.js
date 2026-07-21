@@ -10,9 +10,15 @@ function finalPeriod(value) {
 function subjectSubfields(heading, detail = null) {
   const parts = String(heading || "").split(/\s*(?:—|--)\s*/).filter(Boolean);
   const formSubdivisions = new Set(["fiction", "biography", "juvenile literature"]);
+  const verifiedCodes = detail?.value === heading && Array.isArray(detail.subdivisionMarcCodes)
+    ? detail.subdivisionMarcCodes
+    : [];
   return parts.map((part, index) => {
     if (index === 0) return `$a${escapeSubfield(part)}`;
-    if (index === 1 && detail?.value === heading && ["x", "y", "z", "v"].includes(detail.subdivisionMarcCode)) {
+    if (["x", "y", "z", "v"].includes(verifiedCodes[index - 1])) {
+      return `$${verifiedCodes[index - 1]}${escapeSubfield(part)}`;
+    }
+    if (parts.length === 2 && index === 1 && detail?.value === heading && ["x", "y", "z", "v"].includes(detail.subdivisionMarcCode)) {
       return `$${detail.subdivisionMarcCode}${escapeSubfield(part)}`;
     }
     const code = formSubdivisions.has(part.toLowerCase()) ? "v" : "x";
@@ -200,8 +206,14 @@ export function buildMarcPreview(record) {
     if (!String(subject || "").trim()) continue;
     const fieldPath = `subjects.${index}`;
     const subjectDetail = record.subjectDetails?.[index];
-    const constructed = String(subject).split(/\s*(?:—|--)\s*/).filter(Boolean).length > 1;
-    const unresolvedCode = subjectDetail?.value === subject && constructed && !["x", "y", "z", "v"].includes(subjectDetail.subdivisionMarcCode);
+    const subjectParts = String(subject).split(/\s*(?:—|--)\s*/).filter(Boolean);
+    const constructed = subjectParts.length > 1;
+    const verifiedCodes = Array.isArray(subjectDetail?.subdivisionMarcCodes) ? subjectDetail.subdivisionMarcCodes : [];
+    const hasVerifiedCodes = subjectDetail?.value === subject && (
+      (verifiedCodes.length === subjectParts.length - 1 && verifiedCodes.every((code) => ["x", "y", "z", "v"].includes(code))) ||
+      (subjectParts.length === 2 && ["x", "y", "z", "v"].includes(subjectDetail?.subdivisionMarcCode))
+    );
+    const unresolvedCode = subjectDetail?.value === subject && constructed && !hasVerifiedCodes;
     lines.push(record.marcOverrides?.[fieldPath] || (unresolvedCode
       ? provisionalSubjectField(subject)
       : buildMarcField(fieldPath, subject, { subjectDetail })));
