@@ -374,6 +374,24 @@ function setField(record, fieldPath, value) {
   record[field][index] = value;
 }
 
+function applyAcceptedSubjectDetail(state, record, recommendation) {
+  if (!recommendation.field.startsWith("subjects.")) return;
+  const index = Number(recommendation.field.split(".")[1]);
+  const check = state.authorityChecks.find((item) =>
+    item.context === "reviewer_proposal" && item.recommendationId === recommendation.id
+  );
+  if (!check || !Number.isInteger(index)) return;
+  if (!Array.isArray(record.subjectDetails)) record.subjectDetails = [];
+  record.subjectDetails[index] = {
+    value: recommendation.proposedValue,
+    status: check.status,
+    subdivisionType: check.subdivisionType || "",
+    subdivisionMarcCode: check.subdivisionMarcCode || "",
+    subdivisionMarcCodes: clone(check.subdivisionMarcCodes || []),
+    constructionStatus: check.constructionStatus || ""
+  };
+}
+
 export function deriveFinalRecord(state) {
   if (!state.creatorDraft) return null;
   const finalRecord = clone(state.creatorDraft);
@@ -382,6 +400,7 @@ export function deriveFinalRecord(state) {
   for (const recommendation of state.recommendations) {
     if (recommendation.decision === DECISIONS.ACCEPTED) {
       setField(finalRecord, recommendation.field, recommendation.proposedValue);
+      applyAcceptedSubjectDetail(state, finalRecord, recommendation);
     }
     if (recommendation.decision === DECISIONS.EDITED) {
       setField(finalRecord, recommendation.field, recommendation.editedValue);

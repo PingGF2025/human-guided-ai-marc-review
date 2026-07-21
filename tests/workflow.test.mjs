@@ -207,6 +207,29 @@ test("verified authority metadata drives geographic subdivision coding", () => {
   assert.doesNotMatch(buildMarcPreview(record), /\$xChina/);
 });
 
+test("accepted Reviewer replacement carries verified geographic coding into final MARC", () => {
+  const state = createInitialState(MODES.LIVE);
+  confirmCurated(state);
+  const draft = { ...CURATED_CREATOR_DRAFT, subjects: ["Public markets—China"] };
+  createLiveDraft(state, CURATED_SOURCE_PACKAGE, draft);
+  const recommendation = {
+    id: "review-market-authority", action: "replace", field: "subjects.0", fieldLabel: "650 Subject heading",
+    currentValue: "Public markets—China", proposedValue: "Markets—China", explanation: "The variant resolves to Markets.",
+    evidence: "The contents discuss public markets.", evidenceSource: "Contents", evidenceLocation: "Contents",
+    standardBasis: "Use the authorized 1XX form.", confidence: "high", verificationStatus: "verified", verificationSource: "LC"
+  };
+  const coverage = CURATED_REVIEW_COVERAGE.map((item) => ({ ...item, status: item.field === "650" ? "change_recommended" : "no_change" }));
+  const checks = [{
+    context: "reviewer_proposal", recommendationId: recommendation.id, candidate: "Markets—China",
+    status: "verified_construction", subdivisionType: "geographic", subdivisionMarcCode: "z",
+    subdivisionMarcCodes: ["z"], constructionStatus: "verified_geographic_construction"
+  }];
+  runLiveReview(state, [recommendation], null, coverage, [], checks);
+  acceptRecommendation(state, recommendation.id);
+  assert.match(buildMarcPreview(state.finalRecord), /=650  \\0\$aMarkets\$zChina\./);
+  assert.doesNotMatch(buildMarcPreview(state.finalRecord), /\$xChina/);
+});
+
 test("multi-component authority metadata drives topical then geographic coding", () => {
   const record = {
     ...CURATED_CREATOR_DRAFT,

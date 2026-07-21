@@ -291,6 +291,20 @@ function decisionLabel(decision, actionUi) {
   }[decision];
 }
 
+function recommendationMarcField(recommendation, value) {
+  if (!recommendation.field.startsWith("subjects.")) return buildMarcField(recommendation.field, value);
+  const check = state.authorityChecks.find((item) =>
+    item.context === "reviewer_proposal" && item.recommendationId === recommendation.id
+  );
+  const subjectDetail = check ? {
+    value,
+    status: check.status,
+    subdivisionMarcCode: check.subdivisionMarcCode || "",
+    subdivisionMarcCodes: check.subdivisionMarcCodes || []
+  } : null;
+  return buildMarcField(recommendation.field, value, { subjectDetail });
+}
+
 function createRecommendationCard(recommendation) {
   const actionUi = recommendationActionUi(recommendation);
   const card = document.createElement("article");
@@ -316,7 +330,7 @@ function createRecommendationCard(recommendation) {
   proposed.append(textElement("span", "comparison-label", actionUi.proposal));
   proposed.append(textElement("p", "", actionUi.proposedValue));
   if (actionUi.action !== "remove") {
-    proposed.append(textElement("code", "marc-field", buildMarcField(recommendation.field, recommendation.proposedValue)));
+    proposed.append(textElement("code", "marc-field", recommendationMarcField(recommendation, recommendation.proposedValue)));
   }
   comparison.append(current, proposed);
   card.append(comparison);
@@ -364,7 +378,7 @@ function createRecommendationCard(recommendation) {
   marcInput.id = marcLabel.htmlFor;
   marcInput.className = "marc-edit-input";
   const editableValue = actionUi.action === "remove" ? recommendation.currentValue : recommendation.proposedValue;
-  marcInput.value = recommendation.editedMarc || buildMarcField(recommendation.field, editableValue);
+  marcInput.value = recommendation.editedMarc || recommendationMarcField(recommendation, editableValue);
   const applyEdit = textElement("button", "button button-primary", "Apply human edit");
   applyEdit.type = "button";
   applyEdit.dataset.action = "apply-edit";

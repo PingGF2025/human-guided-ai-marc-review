@@ -285,6 +285,13 @@ def review_draft(
     # the Reviewer cannot confer authority status on its own suggestion.
     for recommendation in result.get("recommendations", []):
         field = str(recommendation.get("field", ""))
+        if field.startswith("subjects.") or field == "genre":
+            evidence_location = str(recommendation.get("evidenceLocation", "")).lower()
+            evidence_text = str(recommendation.get("evidence", "")).lower()
+            if "contents" in evidence_location or "contents" in evidence_text:
+                recommendation["evidenceSource"] = "Contents"
+            elif "description" in evidence_location or "description" in evidence_text:
+                recommendation["evidenceSource"] = "Resource description"
         proposed = str(recommendation.get("proposedValue", "")).strip()
         if not proposed or recommendation.get("action") == "remove":
             continue
