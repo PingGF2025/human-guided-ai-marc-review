@@ -11,7 +11,7 @@ from openai import OpenAI
 from .services import LiveServiceError
 
 
-BUILD_WEEK_DEMO_PDF_SHA256 = "0c8c59262bf812990417f6d993f833cab15ec2493eb6b71de19cd06f6d545501"
+BUILD_WEEK_DEMO_PDF_SHA256 = "b541151fa123ba1c2c76b5125edb95b3fdd007a45479a7155aee4793d0ceaf36"
 MAX_PDF_BYTES = 25 * 1024 * 1024
 
 SOURCE_FIELDS = ["title", "author", "format", "language", "publicationInformation", "isbn", "description", "additionalNotes", "contents"]
@@ -65,16 +65,16 @@ def _item(field: str, label: str, value: str, page: int, excerpt: str, note: str
 
 
 def _build_week_demo_fixture() -> dict[str, Any]:
-    title = "Signals Under Pressure : Cyber Attacks, Information Control, and Digital Resilience in Contemporary China"
+    title = "Shared Tables : Street Food, Public Markets, and City Life in Contemporary China"
     author = "Elena Park"
     publication = "Boston : Meridian Research Press, 2026"
-    description = ("Examines politically motivated cyber attacks against information infrastructure in China, "
-                   "government control of Internet access and online expression, and policies for digital resilience.")
-    notes = ("Extent: xii, 248 pages : illustrations ; 24 cm. Case studies address Internet censorship, platform regulation, public communication during network "
-             "disruptions, national security policy, and accountable technology governance. Includes bibliographical references and index.")
-    contents = ("Introduction: Describing digital threats with care -- 1. Information infrastructure and politically motivated cyber attacks -- "
-                "2. Internet censorship and platform regulation in China -- 3. Public communication during network disruption -- "
-                "4. National security policy and digital resilience -- 5. Comparative approaches to accountable technology governance")
+    description = ("Explores how street food and public markets shape everyday city life in contemporary China, "
+                   "including neighborhood gathering places, local urban economies, and changing food habits.")
+    notes = ("Extent: xii, 248 pages : illustrations ; 24 cm. Case studies address vendors, migration, small family businesses, local economies, "
+             "food habits, and preservation of market traditions during urban development. Includes bibliographical references and index.")
+    contents = ("Introduction: Food, place, and everyday urban life -- 1. Street food and the rhythms of the city -- "
+                "2. Public markets as neighborhood spaces -- 3. Vendors, migration, and local economies -- "
+                "4. Changing food habits in contemporary China -- 5. Preserving market traditions amid urban development")
     return {
         "pageCount": 3,
         "sourcePackage": {
@@ -83,15 +83,15 @@ def _build_week_demo_fixture() -> dict[str, Any]:
             "description": description, "additionalNotes": notes, "contents": contents,
         },
         "evidence": [
-            _item("title", "Title", title, 1, "Signals Under Pressure / Cyber attacks, information control, and digital resilience in contemporary China", "Transcribed from the fictional title page."),
+            _item("title", "Title", title, 1, "Shared Tables / Street food, public markets, and city life in contemporary China", "Transcribed from the fictional title page."),
             _item("author", "Creator", author, 1, "Elena Park", "Transcribed from the fictional title page."),
             _item("format", "Format", "Print book", 2, "Format | Print book", "Transcribed from publication information."),
             _item("language", "Language", "English", 2, "About this book", "Identified from the visible English-language text."),
             _item("publicationInformation", "Publication information", publication, 2, "Publisher: Meridian Research Press / Place and date: Boston, 2026", "Combined from the visible publication table."),
             _item("isbn", "Fictional demonstration ISBN", "9781234567897", 2, "Fictional demonstration ISBN | 978-1-23456-789-7", "Transcribed from the fictional publication table."),
-            _item("description", "Summary evidence", description, 2, "politically motivated cyber attacks against information infrastructure in China", "Conservative condensation of the original fictional summary.", "medium"),
+            _item("description", "Summary evidence", description, 2, "street food and public markets shape everyday city life in contemporary China", "Conservative condensation of the original fictional summary.", "medium"),
             _item("additionalNotes", "Physical description and apparatus", notes, 2, "Extent: xii, 248 pages : illustrations ; 24 cm ... Includes bibliographical references and index", "Combined from the publication table and apparatus statement.", "medium"),
-            _item("contents", "Table of contents", contents, 3, "Introduction: Describing digital threats with care ... 5. Comparative approaches to accountable technology governance", "Transcribed in visible order from the fictional contents page."),
+            _item("contents", "Table of contents", contents, 3, "Introduction: Food, place, and everyday urban life ... 5. Preserving market traditions amid urban development", "Transcribed in visible order from the fictional contents page."),
         ],
         "warnings": ["This is an original fictional Build Week demonstration source; its checksum-valid ISBN is fictional and not publisher-assigned."],
     }

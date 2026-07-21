@@ -191,11 +191,11 @@ class BackendContractTests(unittest.TestCase):
             response = client.post("/api/source/pdf", data={"pdf": (BytesIO(pdf_bytes), pdf_path.name, "application/pdf")})
         payload = response.get_json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(payload["sourcePackage"]["title"].split(" : ")[0], "Signals Under Pressure")
+        self.assertEqual(payload["sourcePackage"]["title"].split(" : ")[0], "Shared Tables")
         self.assertEqual(payload["retrieval"]["provider"], "Original fictional Build Week PDF fixture")
         self.assertIn("fictional", " ".join(payload["retrieval"]["warnings"]).lower())
         self.assertEqual(payload["sourcePackage"]["isbn"], "9781234567897")
-        self.assertIn("Introduction: Describing digital threats with care", payload["sourcePackage"]["contents"])
+        self.assertIn("Introduction: Food, place, and everyday urban life", payload["sourcePackage"]["contents"])
         self.assertTrue(any(item["field"] == "contents" and item["pageNumber"] == 3 for item in payload["retrieval"]["evidence"]))
 
     def test_pdf_upload_rejects_non_pdf_content(self):
