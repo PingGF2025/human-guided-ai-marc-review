@@ -561,6 +561,31 @@ test("adaptive Live recommendation can correct a publication field", () => {
   assert.match(buildMarcPreview(state.finalRecord), /=264  \\1\$aBeijing/);
 });
 
+test("human acceptance of a remove recommendation removes the value while rejection preserves it", () => {
+  const recommendation = {
+    id: "review-remove-subject", action: "remove", field: "subjects.1", fieldLabel: "650 Subject heading 2",
+    currentValue: CURATED_CREATOR_DRAFT.subjects[1], proposedValue: "",
+    explanation: "The heading remains unverified.", evidence: "No authority result was supplied.",
+    evidenceSource: "LC authority check", evidenceLocation: "Recorded authority evidence", standardBasis: "Human decision required.",
+    confidence: "high", verificationStatus: "not_verified", verificationSource: "LC Linked Data Service"
+  };
+  const coverage = CURATED_REVIEW_COVERAGE.map((item) => ({ ...item, status: item.field === "650" ? "change_recommended" : "no_change" }));
+
+  const accepted = createInitialState(MODES.LIVE);
+  confirmCurated(accepted);
+  createLiveDraft(accepted, CURATED_SOURCE_PACKAGE, CURATED_CREATOR_DRAFT);
+  runLiveReview(accepted, [recommendation], null, coverage);
+  acceptRecommendation(accepted, recommendation.id);
+  assert.equal(accepted.finalRecord.subjects[1], "");
+
+  const rejected = createInitialState(MODES.LIVE);
+  confirmCurated(rejected);
+  createLiveDraft(rejected, CURATED_SOURCE_PACKAGE, CURATED_CREATOR_DRAFT);
+  runLiveReview(rejected, [recommendation], null, coverage);
+  rejectRecommendation(rejected, recommendation.id);
+  assert.equal(rejected.finalRecord.subjects[1], CURATED_CREATOR_DRAFT.subjects[1]);
+});
+
 test("Live Reviewer refuses incomplete field coverage", () => {
   const state = createInitialState(MODES.LIVE);
   confirmCurated(state);

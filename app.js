@@ -245,16 +245,45 @@ function renderCreatorDraft() {
   }
 }
 
-function decisionLabel(decision) {
+function recommendationActionUi(recommendation) {
+  const action = recommendation.action || (recommendation.currentValue ? "replace" : "add");
+  const labels = {
+    add: {
+      proposal: "Reviewer proposes adding",
+      proposedValue: recommendation.proposedValue,
+      accept: "Accept addition",
+      reject: "Do not add",
+      accepted: "Addition accepted by human"
+    },
+    replace: {
+      proposal: "Reviewer proposes replacing with",
+      proposedValue: recommendation.proposedValue,
+      accept: "Accept replacement",
+      reject: "Keep Creator value",
+      accepted: "Replacement accepted by human"
+    },
+    remove: {
+      proposal: "Reviewer proposes removal",
+      proposedValue: "Remove this value from the final record",
+      accept: "Accept removal",
+      reject: "Keep Creator value",
+      accepted: "Removal accepted by human"
+    }
+  };
+  return { action, ...labels[action] };
+}
+
+function decisionLabel(decision, actionUi) {
   return {
     [DECISIONS.PENDING]: "Pending human decision",
-    [DECISIONS.ACCEPTED]: "Accepted by human",
+    [DECISIONS.ACCEPTED]: actionUi.accepted,
     [DECISIONS.EDITED]: "Edited by human",
-    [DECISIONS.REJECTED]: "Rejected by human"
+    [DECISIONS.REJECTED]: "Recommendation rejected by human"
   }[decision];
 }
 
 function createRecommendationCard(recommendation) {
+  const actionUi = recommendationActionUi(recommendation);
   const card = document.createElement("article");
   card.className = `recommendation ${recommendation.decision}`;
   card.dataset.recommendationId = recommendation.id;
@@ -273,11 +302,13 @@ function createRecommendationCard(recommendation) {
   comparison.className = "comparison";
   const current = document.createElement("div");
   current.append(textElement("span", "comparison-label", "Creator draft"));
-  current.append(textElement("p", "", recommendation.currentValue));
+  current.append(textElement("p", "", recommendation.currentValue || "No value in Creator draft"));
   const proposed = document.createElement("div");
-  proposed.append(textElement("span", "comparison-label", "Reviewer proposes"));
-  proposed.append(textElement("p", "", recommendation.proposedValue));
-  proposed.append(textElement("code", "marc-field", buildMarcField(recommendation.field, recommendation.proposedValue)));
+  proposed.append(textElement("span", "comparison-label", actionUi.proposal));
+  proposed.append(textElement("p", "", actionUi.proposedValue));
+  if (actionUi.action !== "remove") {
+    proposed.append(textElement("code", "marc-field", buildMarcField(recommendation.field, recommendation.proposedValue)));
+  }
   comparison.append(current, proposed);
   card.append(comparison);
 
@@ -303,13 +334,13 @@ function createRecommendationCard(recommendation) {
 
   const controls = document.createElement("div");
   controls.className = "decision-controls";
-  const accept = textElement("button", "button button-accept", "Accept");
+  const accept = textElement("button", "button button-accept", actionUi.accept);
   accept.type = "button";
   accept.dataset.action = "accept";
-  const edit = textElement("button", "button button-edit", "Edit");
+  const edit = textElement("button", "button button-edit", "Edit recommendation");
   edit.type = "button";
   edit.dataset.action = "edit";
-  const reject = textElement("button", "button button-reject", "Reject");
+  const reject = textElement("button", "button button-reject", actionUi.reject);
   reject.type = "button";
   reject.dataset.action = "reject";
   controls.append(accept, edit, reject);
@@ -323,14 +354,15 @@ function createRecommendationCard(recommendation) {
   const marcInput = document.createElement("input");
   marcInput.id = marcLabel.htmlFor;
   marcInput.className = "marc-edit-input";
-  marcInput.value = recommendation.editedMarc || buildMarcField(recommendation.field, recommendation.proposedValue);
+  const editableValue = actionUi.action === "remove" ? recommendation.currentValue : recommendation.proposedValue;
+  marcInput.value = recommendation.editedMarc || buildMarcField(recommendation.field, editableValue);
   const applyEdit = textElement("button", "button button-primary", "Apply human edit");
   applyEdit.type = "button";
   applyEdit.dataset.action = "apply-edit";
   editArea.append(marcLabel, marcInput, applyEdit);
   card.append(editArea);
 
-  card.append(textElement("p", `decision-state ${recommendation.decision}`, decisionLabel(recommendation.decision)));
+  card.append(textElement("p", `decision-state ${recommendation.decision}`, decisionLabel(recommendation.decision, actionUi)));
   return card;
 }
 
