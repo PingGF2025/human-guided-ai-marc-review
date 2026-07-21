@@ -561,7 +561,7 @@ test("Live Reviewer may recommend no changes while documenting complete coverage
   assert.equal(state.stage, "final");
   assert.deepEqual(state.recommendations, []);
   assert.deepEqual(state.finalRecord, state.creatorDraft);
-  assert.equal(state.reviewerCoverage.length, 12);
+  assert.equal(state.reviewerCoverage.length, 13);
   assert.deepEqual(state.audit.reviewerRecommendations, []);
 });
 
@@ -666,7 +666,7 @@ test("Live Reviewer refuses incomplete field coverage", () => {
   const state = createInitialState(MODES.LIVE);
   confirmCurated(state);
   createLiveDraft(state, CURATED_SOURCE_PACKAGE, CURATED_CREATOR_DRAFT);
-  assert.throws(() => runLiveReview(state, [], null, CURATED_REVIEW_COVERAGE.slice(0, 11)), /all twelve MARC areas/);
+  assert.throws(() => runLiveReview(state, [], null, CURATED_REVIEW_COVERAGE.slice(0, 12)), /all thirteen MARC areas/);
 });
 
 test("live Creator and Reviewer HTTP payloads contain the confirmed visible package and no retrieval-only data", async () => {

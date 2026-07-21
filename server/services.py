@@ -16,12 +16,12 @@ from .authority import verify_draft_headings, verify_lcsh_heading, verify_term
 
 DEFAULT_MODEL = "gpt-5.6-sol"
 DEFAULT_REASONING_EFFORT = "low"
-EXPECTED_COVERAGE_FIELDS = {"020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"}
+EXPECTED_COVERAGE_FIELDS = {"020", "050", "043", "100", "245", "264", "300", "336/337/338", "504", "505", "520", "650", "655"}
 FIELD_TO_AREA = {
     "isbn": "020", "author": "100", "title": "245", "publication": "264", "extent": "300",
     "contentType": "336/337/338", "mediaType": "336/337/338", "carrierType": "336/337/338",
     "summary": "520", "subjects.0": "650", "subjects.1": "650", "subjects.2": "650", "genre": "655",
-    "classificationNumber": "050", "geographicAreaCode": "043", "bibliographyNote": "504/505", "contentsNote": "504/505",
+    "classificationNumber": "050", "geographicAreaCode": "043", "bibliographyNote": "504", "contentsNote": "505",
 }
 
 
@@ -122,14 +122,21 @@ def normalize_creator_draft(source_package: dict[str, Any], draft: dict[str, Any
     # These descriptive notes are copied only from confirmed, visible evidence.
     normalized["contentsNote"] = str(source_package.get("contents") or "").strip()
     notes = str(source_package.get("additionalNotes") or "")
-    normalized["bibliographyNote"] = "Includes bibliographical references." if "bibliographical references" in notes.lower() else ""
+    if "bibliographical references" in notes.lower():
+        normalized["bibliographyNote"] = (
+            "Includes bibliographical references and index."
+            if "index" in notes.lower()
+            else "Includes bibliographical references."
+        )
+    else:
+        normalized["bibliographyNote"] = ""
     return normalized
 
 
 def _validate_review_contract(result: dict[str, Any], authority_checks: list[dict[str, Any]] | None = None) -> None:
     coverage = result.get("reviewCoverage", [])
     fields = [item.get("field") for item in coverage]
-    if len(fields) != 12 or set(fields) != EXPECTED_COVERAGE_FIELDS:
+    if len(fields) != 13 or set(fields) != EXPECTED_COVERAGE_FIELDS:
         raise LiveServiceError("Live Reviewer did not return each required MARC area exactly once.")
     statuses = {item["field"]: item["status"] for item in coverage}
     for recommendation in result.get("recommendations", []):

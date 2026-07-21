@@ -96,7 +96,8 @@ export const CURATED_REVIEW_COVERAGE = Object.freeze([
   { field: "264", label: "Publication information", status: "no_change" },
   { field: "300", label: "Physical description", status: "no_change" },
   { field: "336/337/338", label: "Content, media, and carrier", status: "no_change" },
-  { field: "504/505", label: "Bibliography and contents notes", status: "no_change" },
+  { field: "504", label: "Bibliography note", status: "no_change" },
+  { field: "505", label: "Contents note", status: "no_change" },
   { field: "520", label: "Summary", status: "recommendation" },
   { field: "650", label: "Subject headings", status: "recommendation" },
   { field: "655", label: "Genre/form heading", status: "no_change" }

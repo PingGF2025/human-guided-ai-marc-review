@@ -41,6 +41,8 @@ def validate_draft(source: dict[str, Any], draft: dict[str, Any]) -> list[dict[s
     notes = str(source.get("additionalNotes") or "").lower()
     if str(draft.get("bibliographyNote") or "").strip() and "bibliographical references" not in notes:
         findings.append({"field": "504", "severity": "error", "code": "unsupported_bibliography_note", "message": "Field 504 is not supported by an explicit statement in the confirmed Source Package."})
+    if "bibliographical references" in notes and "index" in notes and "index" not in str(draft.get("bibliographyNote") or "").lower():
+        findings.append({"field": "504", "severity": "error", "code": "incomplete_bibliography_note", "message": "Field 504 omits the explicitly supplied index statement."})
     has_china_geography = any(
         str(subject).lower().endswith(("—china", "--china")) for subject in (draft.get("subjects") or [])
     )

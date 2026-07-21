@@ -413,16 +413,7 @@ function renderRecommendations() {
       change_recommended: "change recommended", missing_field: "missing field",
       needs_verification: "needs verification", not_assessable: "not assessable"
     }[item.status] || item.status;
-    let coverageLabel = item.label;
-    let coverageField = item.field;
-    if (item.field === "504/505" && item.status !== "no_change") {
-      const noteFields = new Set(state.recommendations.map(({ field }) => field));
-      const changes504 = noteFields.has("bibliographyNote");
-      const changes505 = noteFields.has("contentsNote");
-      if (changes504 && !changes505) [coverageLabel, coverageField] = ["Bibliography note", "504"];
-      if (changes505 && !changes504) [coverageLabel, coverageField] = ["Contents note", "505"];
-    }
-    li.append(textElement("strong", "", `${coverageLabel} · ${coverageField} — ${statusLabel}`));
+    li.append(textElement("strong", "", `${item.label} · ${item.field} — ${statusLabel}`));
     if (item.assessment) li.append(textElement("span", "coverage-assessment", item.assessment));
     if (item.verificationStatus) li.append(textElement("small", "", `Verification: ${item.verificationStatus.replaceAll("_", " ")}${item.verificationSource ? ` · ${item.verificationSource}` : ""}`));
     return li;

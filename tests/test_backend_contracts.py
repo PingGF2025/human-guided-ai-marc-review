@@ -236,10 +236,10 @@ class BackendContractTests(unittest.TestCase):
         self.assertGreater(recommendations["maxItems"], 3)
         self.assertFalse(recommendations["items"]["additionalProperties"])
 
-    def test_reviewer_requires_twelve_adaptive_coverage_results(self):
+    def test_reviewer_requires_thirteen_adaptive_coverage_results(self):
         coverage = REVIEWER_SCHEMA["properties"]["reviewCoverage"]
-        self.assertEqual(coverage["minItems"], 12)
-        self.assertEqual(coverage["maxItems"], 12)
+        self.assertEqual(coverage["minItems"], 13)
+        self.assertEqual(coverage["maxItems"], 13)
         statuses = set(coverage["items"]["properties"]["status"]["enum"])
         self.assertEqual(statuses, {"no_change", "change_recommended", "missing_field", "needs_verification", "not_assessable"})
         self.assertIn("verificationStatus", coverage["items"]["required"])
@@ -279,6 +279,7 @@ class BackendContractTests(unittest.TestCase):
         findings = validate_draft(source, draft)
         codes = {finding["code"] for finding in findings}
         self.assertIn("contents_mismatch", codes)
+        self.assertIn("incomplete_bibliography_note", codes)
         self.assertIn("missing_geographic_area_code", codes)
         self.assertIn("classification_is_proposal", codes)
 
@@ -338,6 +339,7 @@ class BackendContractTests(unittest.TestCase):
         self.assertEqual(normalized["placeCode"], "mau")
         self.assertTrue(normalized["books008"])
         self.assertTrue(normalized["hasIndex"])
+        self.assertEqual(normalized["bibliographyNote"], "Includes bibliographical references and index.")
 
     def test_review_contract_rejects_duplicate_coverage_areas(self):
         coverage = [{"field": "020", "status": "no_change"} for _ in range(9)]
@@ -345,7 +347,7 @@ class BackendContractTests(unittest.TestCase):
             _validate_review_contract({"reviewCoverage": coverage, "recommendations": []})
 
     def test_review_contract_requires_human_resolution_for_supported_unverified_heading(self):
-        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]
+        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504", "505", "520", "650", "655"]
         coverage = [{"field": field, "status": "needs_verification" if field == "650" else "no_change"} for field in fields]
         recommendation = {"action": "review", "field": "subjects.1"}
         _validate_review_contract({"reviewCoverage": coverage, "recommendations": [recommendation]})
@@ -353,7 +355,7 @@ class BackendContractTests(unittest.TestCase):
             _validate_review_contract({"reviewCoverage": coverage, "recommendations": []})
 
     def test_review_contract_allows_mixed_subject_correction_and_verification(self):
-        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]
+        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504", "505", "520", "650", "655"]
         coverage = [{"field": field, "status": "change_recommended" if field == "650" else "no_change"} for field in fields]
         recommendations = [
             {"action": "replace", "field": "subjects.0"},
@@ -362,7 +364,7 @@ class BackendContractTests(unittest.TestCase):
         _validate_review_contract({"reviewCoverage": coverage, "recommendations": recommendations})
 
     def test_review_contract_allows_provisional_050_human_resolution(self):
-        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]
+        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504", "505", "520", "650", "655"]
         coverage = [{"field": field, "status": "needs_verification" if field == "050" else "no_change"} for field in fields]
         _validate_review_contract({
             "reviewCoverage": coverage,

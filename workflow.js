@@ -181,9 +181,9 @@ function beginReview(state, recommendations, effectiveMode, metadata = null, cov
   if (!state.creatorDraft) throw new Error("Create a draft before running review.");
   if (!Array.isArray(recommendations)) throw new Error("Reviewer recommendations must be an array.");
   if (effectiveMode === MODES.DEMO && recommendations.length !== 3) throw new Error("The canonical Demo review requires exactly three recommendations.");
-  if (!Array.isArray(coverage) || (effectiveMode === MODES.LIVE && coverage.length !== 12)) throw new Error("Live Reviewer must return coverage for all twelve MARC areas.");
+  if (!Array.isArray(coverage) || (effectiveMode === MODES.LIVE && coverage.length !== 13)) throw new Error("Live Reviewer must return coverage for all thirteen MARC areas.");
   if (effectiveMode === MODES.LIVE) {
-    const requiredAreas = new Set(["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]);
+    const requiredAreas = new Set(["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504", "505", "520", "650", "655"]);
     const returnedAreas = new Set(coverage.map(({ field }) => field));
     if (returnedAreas.size !== requiredAreas.size || [...requiredAreas].some((field) => !returnedAreas.has(field))) {
       throw new Error("Live Reviewer must return each required MARC area exactly once.");

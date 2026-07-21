@@ -78,7 +78,7 @@ RECOMMENDATION_SCHEMA = {
 COVERAGE_SCHEMA = {
     "type": "object",
     "properties": {
-        "field": {"type": "string", "enum": ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]},
+        "field": {"type": "string", "enum": ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504", "505", "520", "650", "655"]},
         "label": {"type": "string"},
         "status": {"type": "string", "enum": ["no_change", "change_recommended", "missing_field", "needs_verification", "not_assessable"]},
         "assessment": {"type": "string"},
@@ -96,7 +96,7 @@ REVIEWER_SCHEMA = {
     "type": "object",
     "properties": {
         "recommendations": {"type": "array", "items": RECOMMENDATION_SCHEMA, "maxItems": 12},
-        "reviewCoverage": {"type": "array", "items": COVERAGE_SCHEMA, "minItems": 12, "maxItems": 12},
+        "reviewCoverage": {"type": "array", "items": COVERAGE_SCHEMA, "minItems": 13, "maxItems": 13},
     },
     "required": ["recommendations", "reviewCoverage"],
     "additionalProperties": False,

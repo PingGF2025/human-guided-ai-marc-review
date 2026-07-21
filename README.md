@@ -21,7 +21,7 @@ The application supports a deterministic Demo mode and a Live mode for real sour
 3. Open Library retrieved metadata with field-level provenance and human confirmation
 4. One visible, human-confirmed Resource Source Package shared exactly by Creator and Reviewer
 5. A curated, repeatable Demo workflow
-6. Adaptive Live review across twelve MARC areas with zero-to-many recommendations
+6. Adaptive Live review across all MARC areas with zero-to-many recommendations
 7. Separate deterministic checks, semantic assessment, and verification status
 8. Human accept, edit, and reject decisions
 9. A final MARC record derived from those decisions
@@ -135,7 +135,7 @@ The tests exercise accept, edit, reject, final MARC generation, and reset behavi
 
 The final record is always derived from the immutable Creator draft plus explicit human decisions. Reviewer recommendations never modify the record directly.
 
-Live Reviewer coverage distinguishes no change needed, change recommended, missing field, needs verification, and not assessable. It reviews 020, 050, 043, 100, 245, 264, 300, 336/337/338, 504/505, 520, 650, and 655 exactly once, but never creates recommendations to satisfy a quota. Confidence never substitutes for actual authority verification.
+Live Reviewer coverage distinguishes no change needed, change recommended, missing field, needs verification, and not assessable. It reviews 020, 050, 043, 100, 245, 264, 300, 336/337/338, 504, 505, 520, 650, and 655 exactly once, but never creates recommendations to satisfy a quota. Confidence never substitutes for actual authority verification.
 
 When a source-supported subject or genre/form heading remains unverified, the interface exposes it for an explicit human choice: keep the Creator heading, edit the MARC field, or remove it. An unavailable or inconclusive lookup is never treated by itself as evidence for removal.
 

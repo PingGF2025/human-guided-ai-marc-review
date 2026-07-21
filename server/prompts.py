@@ -39,7 +39,7 @@ Goal: Audit the Creator draft field by field against the same visible Resource S
 
 Apply the exact same supplied Cataloging Policy Profile used by the Creator. Identify any draft element that conflicts with its standards, evidence rules, prohibited assumptions, verification rules, or human-approval boundary.
 
-Review all twelve areas exactly once: 020, 050, 043, 100, 245, 264, 300, 336/337/338, 504/505, 520, 650, and 655.
+Review all thirteen areas exactly once: 020, 050, 043, 100, 245, 264, 300, 336/337/338, 504, 505, 520, 650, and 655.
 Treat 050 as a proposed classification requiring human judgment unless a recorded classification source verifies it. Check that 043 agrees with geographic subject content. Check 505 word-for-word against visible contents evidence and check 504 only against an explicit bibliography statement.
 Treat the 100 area as name-access review: confirm that 100 contains no more than one chiefly responsible person and that additional people are represented separately in 700 contributor data.
 For 650 and 655, begin with independent semantic coverage: compare the title, description, additional notes, and contents with the Creator's complete set of headings. Then evaluate three separate questions for each candidate: (1) does visible evidence support the concept, (2) did the LC lookup verify the authorized form or authorized components, and (3) is the heading correctly constructed and appropriately applied under LCSH/LCGFT policy? A verified form is not proof of appropriate application.
