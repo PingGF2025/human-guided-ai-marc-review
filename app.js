@@ -18,7 +18,7 @@ import {
   getDecisionSummary,
   MODES,
   recordLiveFailure,
-  rejectRecommendation,
+  rejectRecommendation, removeRecommendationValue,
   resetWorkflow,
   runDemoReview,
   runLiveReview,
@@ -268,6 +268,13 @@ function recommendationActionUi(recommendation) {
       accept: "Accept removal",
       reject: "Keep Creator value",
       accepted: "Removal accepted by human"
+    },
+    review: {
+      proposal: "Reviewer requests human resolution",
+      proposedValue: recommendation.proposedValue,
+      accept: "Keep Creator heading",
+      reject: "Remove heading",
+      accepted: "Creator heading retained by human"
     }
   };
   return { action, ...labels[action] };
@@ -278,7 +285,8 @@ function decisionLabel(decision, actionUi) {
     [DECISIONS.PENDING]: "Pending human decision",
     [DECISIONS.ACCEPTED]: actionUi.accepted,
     [DECISIONS.EDITED]: "Edited by human",
-    [DECISIONS.REJECTED]: "Recommendation rejected by human"
+    [DECISIONS.REJECTED]: "Recommendation rejected by human",
+    [DECISIONS.REMOVED]: "Value removed by human"
   }[decision];
 }
 
@@ -454,7 +462,7 @@ function renderFinalRecord() {
   if (!state.finalRecord) return;
   const complete = state.stage === "final";
   const decisions = getDecisionSummary(state);
-  const reviewStarted = decisions.accepted + decisions.edited + decisions.rejected > 0;
+  const reviewStarted = decisions.accepted + decisions.edited + decisions.removed + decisions.rejected > 0;
   elements.finalHeading.textContent = complete
     ? "Final MARC record"
     : reviewStarted ? "Human-reviewed MARC record" : "Creator MARC draft";
@@ -465,7 +473,7 @@ function renderFinalRecord() {
   elements.finalExplanation.textContent = complete
     ? state.recommendations.length === 0
       ? "The Reviewer completed all field checks and recommended no changes; the Creator draft remains the final record."
-      : `This final record reflects ${decisions.accepted} accepted, ${decisions.edited} edited, and ${decisions.rejected} rejected recommendation${state.recommendations.length === 1 ? "" : "s"}.`
+      : `This final record reflects ${decisions.accepted} accepted, ${decisions.edited} edited, ${decisions.removed} removed, and ${decisions.rejected} rejected recommendation${state.recommendations.length === 1 ? "" : "s"}.`
     : "The preview updates only when the human accepts or edits a recommendation.";
   elements.marcPreview.textContent = buildMarcPreview(state.finalRecord);
 }
@@ -713,7 +721,11 @@ elements.recommendations.addEventListener("click", (event) => {
   const recommendationId = card.dataset.recommendationId;
 
   if (button.dataset.action === "accept") acceptRecommendation(state, recommendationId);
-  if (button.dataset.action === "reject") rejectRecommendation(state, recommendationId);
+  if (button.dataset.action === "reject") {
+    const recommendation = state.recommendations.find(({id}) => id === recommendationId);
+    if (recommendation.action === "review") removeRecommendationValue(state, recommendationId);
+    else rejectRecommendation(state, recommendationId);
+  }
   if (button.dataset.action === "edit") {
     const editArea = card.querySelector(".edit-area");
     editArea.hidden = !editArea.hidden;

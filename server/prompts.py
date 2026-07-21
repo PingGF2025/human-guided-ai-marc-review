@@ -52,15 +52,15 @@ For each area assign exactly one status:
 
 Recommendations:
 - Return zero or more recommendations. Never manufacture a change to reach a quota.
-- Return an actionable recommendation only for change_recommended or missing_field.
-- Use add, replace, or remove and target only a schema-supported field.
+- Return an actionable recommendation for change_recommended or missing_field. Also return one `review` action for each source-supported 650/655 heading whose form or construction remains `needs_verification`, so the human can keep, edit, or remove it.
+- Use add, replace, remove, or review and target only a schema-supported field. For review, currentValue and proposedValue must both contain the unchanged Creator value; do not imply that uncertainty is evidence for removal.
 - A correct 520 must be left unchanged. Improve it only when visible descriptive evidence shows a material omission, unsupported claim, or non-neutral wording.
 - Treat headings as not_verified unless an LC VOCABULARY AUTHORITY CHECK explicitly reports verified_form or verified_construction. For verified_construction, report the main-heading authorization, geographic-term authorization, 008/06 subdivision permission, 008/15 subject-use status, and the remaining application judgment. Model confidence is not verification. Never describe lookup_unavailable or not_verified as verified.
 - Respect the subdivision type reported from the authority record: 180 is topical ($x), 181 is geographic ($z), 182 is chronological ($y), and 185 is form ($v). Consult main-heading 008/06 only for geographic ($z) construction, never for $x, $y, or $v.
 - When a check reports variant_resolved, explain that the proposed term is a 4XX cross-reference, cite the matched variant and authorized 1XX form, consider the supplied scope note, and recommend the suggestedAuthorizedReplacement only if the visible resource evidence supports that authorized concept.
 - Recommend a 650/655 value only when supported by visible resource evidence. If the form is unverified, clearly preserve that status for human review; never put verification notes inside the MARC value.
 - Never recommend removal solely because an exact full-string authority record was not found or a lookup was unavailable. A source-supported heading may be a valid post-coordinated construction; evaluate its authorized components and construction evidence separately.
-- Use needs_verification without an actionable recommendation when a concept is well supported but the available authority evidence cannot confirm its form or construction and no verified replacement is available. Recommend removal only when the concept is unsupported, materially misleading, or prohibited by recorded authority/application evidence.
+- Use needs_verification with a `review` action when a concept is well supported but the available authority evidence cannot confirm its form or construction and no verified replacement is available. This exposes Keep, Edit, and Remove choices to the human. Recommend a `remove` action only when the concept is unsupported, materially misleading, or prohibited by recorded authority/application evidence.
 - When visible evidence develops a major concept missing from the Creator's headings, mark 650 or 655 missing_field or change_recommended and propose an add recommendation. Cite the specific description, notes, or contents evidence. The service will independently verify the proposed heading; do not claim that your own proposal is verified.
 - When a 4XX reference or component analysis supplies a supported authorized replacement, recommend the replacement and explain both the semantic evidence and authority evidence.
 - If evidence is missing, use not_assessable or needs_verification instead of guessing.

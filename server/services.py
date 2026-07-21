@@ -134,8 +134,20 @@ def _validate_review_contract(result: dict[str, Any], authority_checks: list[dic
     statuses = {item["field"]: item["status"] for item in coverage}
     for recommendation in result.get("recommendations", []):
         area = FIELD_TO_AREA.get(recommendation.get("field"))
-        if statuses.get(area) not in {"change_recommended", "missing_field"}:
+        allowed_statuses = {"needs_verification"} if recommendation.get("action") == "review" else {"change_recommended", "missing_field"}
+        if statuses.get(area) not in allowed_statuses:
             raise LiveServiceError("Live Reviewer returned a recommendation without a matching change status.")
+    recommendations = result.get("recommendations", [])
+    if statuses.get("650") == "needs_verification" and not any(
+        item.get("action") == "review" and str(item.get("field", "")).startswith("subjects.")
+        for item in recommendations
+    ):
+        raise LiveServiceError("Live Reviewer identified an unresolved subject heading without exposing it for human resolution.")
+    if statuses.get("655") == "needs_verification" and not any(
+        item.get("action") == "review" and item.get("field") == "genre"
+        for item in recommendations
+    ):
+        raise LiveServiceError("Live Reviewer identified an unresolved genre/form heading without exposing it for human resolution.")
     # An unverified form is not itself evidence that a source-supported concept
     # should be removed. Coverage may explicitly remain needs_verification when
     # no verified replacement is available; actionable recommendations remain

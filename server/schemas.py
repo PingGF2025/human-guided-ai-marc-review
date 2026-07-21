@@ -60,7 +60,7 @@ RECOMMENDATION_SCHEMA = {
     "type": "object",
     "properties": {
         "id": {"type": "string"},
-        "action": {"type": "string", "enum": ["add", "replace", "remove"]},
+        "action": {"type": "string", "enum": ["add", "replace", "remove", "review"]},
         "field": {"type": "string", "enum": TARGET_FIELDS},
         "fieldLabel": {"type": "string"}, "currentValue": {"type": "string"},
         "proposedValue": {"type": "string"}, "explanation": {"type": "string"},

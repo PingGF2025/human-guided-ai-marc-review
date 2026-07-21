@@ -25,6 +25,7 @@ import {
   getDecisionSummary,
   MODES,
   recordLiveFailure,
+  removeRecommendationValue,
   rejectRecommendation,
   resetDemo,
   resetWorkflow,
@@ -164,7 +165,8 @@ test("canonical scenario completes with one accepted, one edited, and one reject
     pending: 0,
     accepted: 1,
     edited: 1,
-    rejected: 1
+    rejected: 1,
+    removed: 0
   });
 
   const marc = buildMarcPreview(state.finalRecord);
@@ -598,6 +600,25 @@ test("human acceptance of a remove recommendation removes the value while reject
   runLiveReview(rejected, [recommendation], null, coverage);
   rejectRecommendation(rejected, recommendation.id);
   assert.equal(rejected.finalRecord.subjects[1], CURATED_CREATOR_DRAFT.subjects[1]);
+});
+
+test("unverified supported heading can be kept, edited, or removed by the human", () => {
+  const recommendation = {
+    id: "review-unverified-subject", action: "review", field: "subjects.1", fieldLabel: "650 Subject heading 2",
+    currentValue: CURATED_CREATOR_DRAFT.subjects[1], proposedValue: CURATED_CREATOR_DRAFT.subjects[1],
+    explanation: "The concept is supported, but its form remains unverified.", evidence: "The contents develop this concept.",
+    evidenceSource: "Contents", evidenceLocation: "Confirmed Source Package", standardBasis: "Human resolution required.",
+    confidence: "medium", verificationStatus: "not_verified", verificationSource: ""
+  };
+  const coverage = CURATED_REVIEW_COVERAGE.map((item) => ({ ...item, status: item.field === "650" ? "needs_verification" : "no_change" }));
+
+  const removed = createInitialState(MODES.LIVE);
+  confirmCurated(removed);
+  createLiveDraft(removed, CURATED_SOURCE_PACKAGE, CURATED_CREATOR_DRAFT);
+  runLiveReview(removed, [recommendation], null, coverage);
+  removeRecommendationValue(removed, recommendation.id);
+  assert.equal(removed.finalRecord.subjects[1], "");
+  assert.equal(removed.recommendations[0].decision, DECISIONS.REMOVED);
 });
 
 test("Live Reviewer refuses incomplete field coverage", () => {

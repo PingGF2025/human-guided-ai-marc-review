@@ -10,7 +10,8 @@ export const DECISIONS = Object.freeze({
   PENDING: "pending",
   ACCEPTED: "accepted",
   EDITED: "edited",
-  REJECTED: "rejected"
+  REJECTED: "rejected",
+  REMOVED: "removed"
 });
 
 export const MODES = Object.freeze({
@@ -356,6 +357,10 @@ export function rejectRecommendation(state, recommendationId) {
   return setDecision(state, recommendationId, DECISIONS.REJECTED);
 }
 
+export function removeRecommendationValue(state, recommendationId) {
+  return setDecision(state, recommendationId, DECISIONS.REMOVED);
+}
+
 function setField(record, fieldPath, value) {
   const [field, indexText] = fieldPath.split(".");
   if (indexText === undefined) {
@@ -384,6 +389,9 @@ export function deriveFinalRecord(state) {
         marcOverrides[recommendation.field] = recommendation.editedMarc;
       }
     }
+    if (recommendation.decision === DECISIONS.REMOVED) {
+      setField(finalRecord, recommendation.field, "");
+    }
   }
   if (Object.keys(marcOverrides).length) finalRecord.marcOverrides = marcOverrides;
   return finalRecord;
@@ -397,7 +405,8 @@ export function getDecisionSummary(state) {
     [DECISIONS.PENDING]: 0,
     [DECISIONS.ACCEPTED]: 0,
     [DECISIONS.EDITED]: 0,
-    [DECISIONS.REJECTED]: 0
+    [DECISIONS.REJECTED]: 0,
+    [DECISIONS.REMOVED]: 0
   });
 }
 

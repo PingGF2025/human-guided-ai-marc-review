@@ -137,6 +137,8 @@ The final record is always derived from the immutable Creator draft plus explici
 
 Live Reviewer coverage distinguishes no change needed, change recommended, missing field, needs verification, and not assessable. It reviews 020, 050, 043, 100, 245, 264, 300, 336/337/338, 504/505, 520, 650, and 655 exactly once, but never creates recommendations to satisfy a quota. Confidence never substitutes for actual authority verification.
 
+When a source-supported subject or genre/form heading remains unverified, the interface exposes it for an explicit human choice: keep the Creator heading, edit the MARC field, or remove it. An unavailable or inconclusive lookup is never treated by itself as evidence for removal.
+
 Every generated run records the confirmed visible source input, complete retrieval or extraction provenance, requested and effective mode, API metadata, Creator output, Reviewer output, human decision events, final record, and fallback events. The full audit is visible and downloadable from the UI. Retrieval and PDF extraction metadata never enter either AI payload unless represented in—and confirmed as part of—the visible Resource Source Package.
 
 The same versioned Cataloging Policy Profile is displayed to the human, supplied to both AI roles, verified by the server against the canonical JSON file, and preserved in the audit. It is policy context only and never enters MARC output. Repository `AGENTS.md` remains the higher-level development agreement; it is not sent wholesale to the AI roles.

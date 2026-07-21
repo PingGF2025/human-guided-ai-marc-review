@@ -344,11 +344,13 @@ class BackendContractTests(unittest.TestCase):
         with self.assertRaises(LiveServiceError):
             _validate_review_contract({"reviewCoverage": coverage, "recommendations": []})
 
-    def test_review_contract_allows_supported_unverified_heading_to_remain_needs_verification(self):
+    def test_review_contract_requires_human_resolution_for_supported_unverified_heading(self):
         fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]
         coverage = [{"field": field, "status": "needs_verification" if field == "650" else "no_change"} for field in fields]
-        checks = [{"vocabulary": "LCSH", "status": "not_verified"}]
-        _validate_review_contract({"reviewCoverage": coverage, "recommendations": []}, checks)
+        recommendation = {"action": "review", "field": "subjects.1"}
+        _validate_review_contract({"reviewCoverage": coverage, "recommendations": [recommendation]})
+        with self.assertRaises(LiveServiceError):
+            _validate_review_contract({"reviewCoverage": coverage, "recommendations": []})
 
 
 if __name__ == "__main__":
