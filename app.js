@@ -247,6 +247,7 @@ function renderCreatorDraft() {
 
 function recommendationActionUi(recommendation) {
   const action = recommendation.action || (recommendation.currentValue ? "replace" : "add");
+  const headingReview = recommendation.field.startsWith("subjects.") || recommendation.field === "genre";
   const labels = {
     add: {
       proposal: "Reviewer proposes adding",
@@ -272,9 +273,9 @@ function recommendationActionUi(recommendation) {
     review: {
       proposal: "Reviewer requests human resolution",
       proposedValue: recommendation.proposedValue,
-      accept: "Keep Creator heading",
-      reject: "Remove heading",
-      accepted: "Creator heading retained by human"
+      accept: headingReview ? "Keep Creator heading" : "Keep Creator value",
+      reject: headingReview ? "Remove heading" : "Remove value",
+      accepted: headingReview ? "Creator heading retained by human" : "Creator value retained by human"
     }
   };
   return { action, ...labels[action] };

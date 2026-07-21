@@ -138,7 +138,9 @@ def _validate_review_contract(result: dict[str, Any], authority_checks: list[dic
         # One area can therefore contain both a verified correction and an
         # unresolved form that needs human resolution.
         allowed_statuses = (
-            {"change_recommended", "missing_field", "needs_verification"}
+            {"needs_verification", "change_recommended"}
+            if recommendation.get("action") == "review"
+            else {"change_recommended", "missing_field", "needs_verification"}
             if area in {"650", "655"}
             else {"change_recommended", "missing_field"}
         )

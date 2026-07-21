@@ -361,6 +361,14 @@ class BackendContractTests(unittest.TestCase):
         ]
         _validate_review_contract({"reviewCoverage": coverage, "recommendations": recommendations})
 
+    def test_review_contract_allows_provisional_050_human_resolution(self):
+        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]
+        coverage = [{"field": field, "status": "needs_verification" if field == "050" else "no_change"} for field in fields]
+        _validate_review_contract({
+            "reviewCoverage": coverage,
+            "recommendations": [{"action": "review", "field": "classificationNumber"}],
+        })
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -621,6 +621,24 @@ test("unverified supported heading can be kept, edited, or removed by the human"
   assert.equal(removed.recommendations[0].decision, DECISIONS.REMOVED);
 });
 
+test("provisional 050 review supports a direct human MARC edit", () => {
+  const state = createInitialState(MODES.LIVE);
+  confirmCurated(state);
+  createLiveDraft(state, CURATED_SOURCE_PACKAGE, CURATED_CREATOR_DRAFT);
+  const currentValue = state.creatorDraft.classificationNumber;
+  const recommendation = {
+    id: "review-provisional-050", action: "review", field: "classificationNumber", fieldLabel: "050 Proposed LC call number",
+    currentValue, proposedValue: currentValue, explanation: "The proposed classification requires schedule verification.",
+    evidence: "The source develops the classified topic.", evidenceSource: "Contents", evidenceLocation: "Confirmed Source Package",
+    standardBasis: "Human verification required.", confidence: "medium", verificationStatus: "not_verified", verificationSource: ""
+  };
+  const coverage = CURATED_REVIEW_COVERAGE.map((item) => ({ ...item, status: item.field === "050" ? "needs_verification" : "no_change" }));
+  runLiveReview(state, [recommendation], null, coverage);
+  editRecommendation(state, recommendation.id, "GT2853.C6", "=050  \\4$aGT2853.C6");
+  assert.equal(state.finalRecord.classificationNumber, "GT2853.C6");
+  assert.equal(state.finalRecord.marcOverrides.classificationNumber, "=050  \\4$aGT2853.C6");
+});
+
 test("Live Reviewer refuses incomplete field coverage", () => {
   const state = createInitialState(MODES.LIVE);
   confirmCurated(state);

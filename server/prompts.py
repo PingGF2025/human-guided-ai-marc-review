@@ -52,7 +52,7 @@ For each area assign exactly one status:
 
 Recommendations:
 - Return zero or more recommendations. Never manufacture a change to reach a quota.
-- Return an actionable recommendation for change_recommended or missing_field. Also return one `review` action for each source-supported 650/655 heading whose form or construction remains `needs_verification`, so the human can keep, edit, or remove it.
+- Return an actionable recommendation for change_recommended or missing_field. Use a `review` action for a provisional 050 that remains `needs_verification`, and for each source-supported 650/655 heading whose form or construction remains `needs_verification`, so the human can keep, edit, or remove it.
 - Use add, replace, remove, or review and target only a schema-supported field. For review, currentValue and proposedValue must both contain the unchanged Creator value; do not imply that uncertainty is evidence for removal.
 - A correct 520 must be left unchanged. Improve it only when visible descriptive evidence shows a material omission, unsupported claim, or non-neutral wording.
 - Treat headings as not_verified unless an LC VOCABULARY AUTHORITY CHECK explicitly reports verified_form or verified_construction. For verified_construction, report the main-heading authorization, geographic-term authorization, 008/06 subdivision permission, 008/15 subject-use status, and the remaining application judgment. Model confidence is not verification. Never describe lookup_unavailable or not_verified as verified.

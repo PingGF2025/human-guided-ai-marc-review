@@ -294,8 +294,8 @@ function findRecommendation(state, recommendationId) {
 
 function expectedMarcTag(fieldPath) {
   return {
-    isbn: "020", author: "100", title: "245", publication: "264", extent: "300",
-    contentType: "336", mediaType: "337", carrierType: "338", summary: "520", genre: "655"
+    isbn: "020", classificationNumber: "050", geographicAreaCode: "043", author: "100", title: "245", publication: "264", extent: "300",
+    contentType: "336", mediaType: "337", carrierType: "338", bibliographyNote: "504", contentsNote: "505", summary: "520", genre: "655"
   }[fieldPath] || (fieldPath.startsWith("subjects.") ? "650" : null);
 }
 
