@@ -134,9 +134,19 @@ def _validate_review_contract(result: dict[str, Any], authority_checks: list[dic
     statuses = {item["field"]: item["status"] for item in coverage}
     for recommendation in result.get("recommendations", []):
         area = FIELD_TO_AREA.get(recommendation.get("field"))
-        allowed_statuses = {"needs_verification"} if recommendation.get("action") == "review" else {"change_recommended", "missing_field"}
+        # 650 and 655 each aggregate several independently assessed headings.
+        # One area can therefore contain both a verified correction and an
+        # unresolved form that needs human resolution.
+        allowed_statuses = (
+            {"change_recommended", "missing_field", "needs_verification"}
+            if area in {"650", "655"}
+            else {"change_recommended", "missing_field"}
+        )
         if statuses.get(area) not in allowed_statuses:
-            raise LiveServiceError("Live Reviewer returned a recommendation without a matching change status.")
+            raise LiveServiceError(
+                f"Live Reviewer returned {recommendation.get('action', 'an')} action for {area or 'an unknown area'} "
+                f"while coverage reported {statuses.get(area, 'no status')}."
+            )
     recommendations = result.get("recommendations", [])
     if statuses.get("650") == "needs_verification" and not any(
         item.get("action") == "review" and str(item.get("field", "")).startswith("subjects.")

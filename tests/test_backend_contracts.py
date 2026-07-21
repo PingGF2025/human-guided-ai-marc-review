@@ -352,6 +352,15 @@ class BackendContractTests(unittest.TestCase):
         with self.assertRaises(LiveServiceError):
             _validate_review_contract({"reviewCoverage": coverage, "recommendations": []})
 
+    def test_review_contract_allows_mixed_subject_correction_and_verification(self):
+        fields = ["020", "050", "043", "100", "245", "264", "300", "336/337/338", "504/505", "520", "650", "655"]
+        coverage = [{"field": field, "status": "change_recommended" if field == "650" else "no_change"} for field in fields]
+        recommendations = [
+            {"action": "replace", "field": "subjects.0"},
+            {"action": "review", "field": "subjects.1"},
+        ]
+        _validate_review_contract({"reviewCoverage": coverage, "recommendations": recommendations})
+
 
 if __name__ == "__main__":
     unittest.main()
