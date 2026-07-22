@@ -12,6 +12,8 @@ This Build Week prototype adapts ideas from an existing cataloging interface int
 
 [Watch the Human-Guided AI MARC Review Build Week demo on YouTube](https://youtu.be/3wkxP2i9WaU).
 
+[View the submitted Human-Guided AI MARC Review project on Devpost](https://devpost.com/software/human-guided-ai-marc-review).
+
 Included demonstration evidence:
 
 - [`output/pdf/build-week-demo-source.pdf`](output/pdf/build-week-demo-source.pdf) - original fictional evidence packet for recording
